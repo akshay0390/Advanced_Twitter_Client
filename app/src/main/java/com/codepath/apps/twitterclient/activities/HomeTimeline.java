@@ -1,88 +1,42 @@
 package com.codepath.apps.twitterclient.activities;
 
 import android.content.Intent;
-import android.support.v7.app.ActionBar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ListView;
-import android.widget.Toast;
 
+import com.astuetz.PagerSlidingTabStrip;
 import com.codepath.apps.twitterclient.R;
-import com.codepath.apps.twitterclient.TwitterClient;
 import com.codepath.apps.twitterclient.TwitterClientApplication;
-import com.codepath.apps.twitterclient.adapters.TweetItemAdapter;
-import com.codepath.apps.twitterclient.listeners.EndlessScrollListener;
-import com.codepath.apps.twitterclient.models.Tweet;
-import com.loopj.android.http.JsonHttpResponseHandler;
+import com.codepath.apps.twitterclient.fragments.HomeTweetsFragment;
+import com.codepath.apps.twitterclient.fragments.MentionsTweetFragment;
+import com.codepath.apps.twitterclient.models.User;
 
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
+import org.scribe.builder.api.TwitterApi;
+import org.scribe.extractors.AccessTokenExtractor;
+import org.scribe.model.Token;
+import org.scribe.oauth.OAuth10aServiceImpl;
 
 public class HomeTimeline extends AppCompatActivity {
-
-    private TwitterClient twitterClient;
-    private ArrayList<Tweet> tweets;
-    private ListView lvHomeTimeline;
-    private TweetItemAdapter tweetItemAdapter;
-    private Long maxId = 0L;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_timeline);
 
-        twitterClient = TwitterClientApplication.getRestClient();
-        lvHomeTimeline = (ListView) findViewById(R.id.lvHomeTimeline);
-        tweets = new ArrayList<>();
-        tweetItemAdapter = new TweetItemAdapter(this,tweets);
-        lvHomeTimeline.setAdapter(tweetItemAdapter);
-        populateHomeTimeLine(null);
-        setupOnScrollListener();
+        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
+
+        viewPager.setAdapter(new TweetPagerAdapter(getSupportFragmentManager()));
+        PagerSlidingTabStrip slidingTabStrip = (PagerSlidingTabStrip) findViewById(R.id.tabs);
+        slidingTabStrip.setViewPager(viewPager);
     }
 
-    private void setupOnScrollListener(){
-        lvHomeTimeline.setOnScrollListener(new EndlessScrollListener() {
-            @Override
-            public boolean onLoadMore(int page, int totalItemsCount) {
-                // Triggered only when new data needs to be appended to the list
-                // Add whatever code is needed to append new items to your AdapterView
-                customLoadMoreDataFromApi(page);
-                // or customLoadMoreDataFromApi(totalItemsCount);
-                return true; // ONLY if more data is actually being loaded; false otherwise.
-            }
-        });
-    }
 
-    // Append more data into the adapter
-    public void customLoadMoreDataFromApi(int offset) {
-        // This method probably sends out a network request and appends new data items to your adapter.
-        // Use the offset value and add it as a parameter to your API request to retrieve paginated data.
-        // Deserialize API response and then construct new objects to append to the adapter
-        maxId = tweets.get(tweets.size()-1).getUid();
-        populateHomeTimeLine(maxId);
-    }
-
-    private void populateHomeTimeLine(final Long maxId){
-        twitterClient.getHomeTimeLine(new JsonHttpResponseHandler() {
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-                tweetItemAdapter.addAll(Tweet.fromJSONArray(response));
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Log.e("error",throwable.getMessage());
-                Toast.makeText(HomeTimeline.this, "Error occurred while retrieving Tweets", Toast.LENGTH_SHORT).show();
-            }
-        }, maxId);
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -90,8 +44,6 @@ public class HomeTimeline extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_home_timeline, menu);
         //ActionBar mActionBar = getSupportActionBar();
         //mActionBar.setDisplayOptions( ActionBar.DISPLAY_SHOW_HOME| ActionBar.DISPLAY_SHOW_TITLE);
-
-
         return true;
     }
 
@@ -112,14 +64,44 @@ public class HomeTimeline extends AppCompatActivity {
 
     public void showTweetActivity(MenuItem item) {
         Intent i = new Intent(this, TweetActivity.class);
-        startActivityForResult(i,200);
+        startActivity(i);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == 200 && resultCode == 200){
-            tweetItemAdapter.clear();
-            populateHomeTimeLine(null);
+    public void showProfileView(MenuItem item) {
+        Intent i = new Intent(this, ProfileActivity.class);
+        startActivity(i);
+    }
+
+
+
+
+    public class TweetPagerAdapter extends FragmentPagerAdapter{
+
+        private String TABS[] = {"Home","Mentions"};
+
+        public TweetPagerAdapter(FragmentManager fm){
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            if(position == 0){
+                return new HomeTweetsFragment();
+            }else if(position == 1){
+                return new MentionsTweetFragment();
+            }else {
+                return null;
+            }
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return TABS[position];
+        }
+
+        @Override
+        public int getCount() {
+            return TABS.length;
         }
     }
 }

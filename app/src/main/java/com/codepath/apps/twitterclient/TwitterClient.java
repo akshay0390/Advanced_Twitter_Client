@@ -8,6 +8,7 @@ import android.content.Context;
 
 import com.codepath.oauth.OAuthBaseClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 /*
@@ -32,6 +33,9 @@ public class TwitterClient extends OAuthBaseClient {
 	private static final String HOME_TIME_LINE_URL = "statuses/home_timeline.json";
 	private static final String USER_INFO_URL = "account/verify_credentials.json";
 	private static final String POST_TWEET_URL = "statuses/update.json";
+	private static final String MENTIONS_TWEET_URL = "statuses/mentions_timeline.json";
+    private static final String USER_TIMELINE = "statuses/user_timeline.json";
+    private static final String LOOKUP_USER = "users/lookup.json";
 
 	public TwitterClient(Context context) {
 		super(context, REST_API_CLASS, REST_URL, REST_CONSUMER_KEY, REST_CONSUMER_SECRET, REST_CALLBACK_URL);
@@ -61,10 +65,38 @@ public class TwitterClient extends OAuthBaseClient {
 		client.get(apiURL,null,handler);
 	}
 
+    public void getUserInfo(String screenName, AsyncHttpResponseHandler handler){
+        String apiURL = getApiUrl(LOOKUP_USER);
+        RequestParams params = new RequestParams();
+		if(screenName!=null) {
+			params.add("screen_name", screenName);
+		}
+        client.get(apiURL,params,handler);
+    }
+
 	public void postTweet(AsyncHttpResponseHandler handler, String tweetBody){
 		String apiURL = getApiUrl(POST_TWEET_URL);
 		RequestParams params = new RequestParams();
 		params.put("status",tweetBody);
-		client.post(apiURL,params,handler);
+		client.post(apiURL, params, handler);
 	}
+
+	public void getMentionsTimeLine(AsyncHttpResponseHandler handler, Long maxId) {
+        String apiURL = getApiUrl(MENTIONS_TWEET_URL);
+        RequestParams params = new RequestParams();
+        params.put("count",25);
+        params.put("since_id",1);
+        if(maxId!=null){
+            params.put("max_id", maxId);
+        }
+        client.get(apiURL, params, handler);
+	}
+
+    public void getUserTimeLine(String screenName, AsyncHttpResponseHandler handler){
+        String apiURL = getApiUrl(USER_TIMELINE);
+        RequestParams params = new RequestParams();
+        params.put("screen_name",screenName);
+        params.put("count",25);
+        client.get(apiURL, params, handler);
+    }
 }

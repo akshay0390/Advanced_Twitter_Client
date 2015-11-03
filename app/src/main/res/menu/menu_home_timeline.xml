@@ -7,5 +7,10 @@
         android:orderInCategory="4"
         android:onClick="showTweetActivity"
         app:showAsAction="always" />
-
+    <item android:id="@+id/profile"
+        android:title="Title"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_profile"
+        android:onClick="showProfileView"
+        />
 </menu>

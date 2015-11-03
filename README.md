@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # RestClientTemplate
 
 ## Overview
@@ -269,3 +270,7 @@ client.clearAccessToken();
 # Twitter_Client
 Twitter Client
 >>>>>>> 43beb6f0d3af949793ffed55abe11e26d46c480e
+=======
+# Advanced_Twitter_Client
+Advanced_Twitter_Client
+>>>>>>> 723226bfc148898f89bec12736e58e46c67d770d

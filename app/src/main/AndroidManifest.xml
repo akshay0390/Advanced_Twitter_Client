@@ -54,7 +54,14 @@
         <activity
             android:name=".activities.TweetActivity"
             android:label="@string/title_activity_tweet" >
-
+        </activity>
+        <activity
+            android:name=".activities.ProfileActivity"
+            android:label="@string/title_activity_profile" >
+        </activity>
+        <activity
+            android:name=".activities.TimeLineActivity"
+            android:label="@string/title_activity_time_line" >
         </activity>
     </application>
 
